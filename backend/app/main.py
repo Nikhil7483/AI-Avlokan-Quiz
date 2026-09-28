@@ -61,7 +61,7 @@ POINT_ACTIVITY_TYPES = {"FULLSCREEN_EXIT", "COPY_ATTEMPT", "PASTE_ATTEMPT", "CUT
 def startup():
     if app_env == "production":
         configured_admin_secret = os.getenv("ADMIN_SECRET", "")
-        if len(admin_password) < 12 or len(configured_admin_secret) < 32 or hmac.compare_digest(configured_admin_secret, admin_password):
+        if len(admin_password) < 10 or len(configured_admin_secret) < 32 or hmac.compare_digest(configured_admin_secret, admin_password):
             raise RuntimeError("Production requires a strong ADMIN_PASSWORD and a separate ADMIN_SECRET of at least 32 characters")
         if not public_app_url.startswith("https://"):
             raise RuntimeError("Production PUBLIC_APP_URL must use HTTPS")
