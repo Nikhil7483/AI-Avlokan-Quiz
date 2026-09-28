@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { apiBase, request, sessionJoinUrl } from './api';
+import { API, apiBase, request, sessionJoinUrl, setApiBaseUrl } from './api';
 
 function Shell({ children }) {
   return <main className="shell"><header><Link to="/" className="brand">AI <span>AVLOKAN</span></Link><span className="eyebrow">LIVE KNOWLEDGE ARENA</span></header>{children}</main>;
@@ -208,9 +208,77 @@ function Completed() {
 }
 
 function AdminLogin() {
-  const [password, setPassword] = useState(''); const [error, setError] = useState(''); const navigate = useNavigate();
-  async function submit(event) { event.preventDefault(); try { const data = await request('/api/admin/login', { method: 'POST', body: JSON.stringify({ password }) }); localStorage.setItem('adminToken', data.token); navigate('/admin'); } catch (requestError) { setError(requestError.message); } }
-  return <Shell><section className="panel narrow"><p className="kicker">Organizer access</p><h2>Host console</h2><form onSubmit={submit}><label>Admin password<input type="password" value={password} onChange={event => setPassword(event.target.value)} required /></label>{error && <p className="error">{error}</p>}<button className="button primary wide">Sign in</button></form></section></Shell>;
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [customApi, setCustomApi] = useState(API);
+  const [showApiInput, setShowApiInput] = useState(API.includes('vercel.app'));
+  const navigate = useNavigate();
+
+  async function submit(event) {
+    event.preventDefault();
+    setError('');
+    try {
+      const data = await request('/api/admin/login', { method: 'POST', body: JSON.stringify({ password }) });
+      localStorage.setItem('adminToken', data.token);
+      navigate('/admin');
+    } catch (requestError) {
+      if (API.includes('vercel.app')) {
+        setError('The frontend is currently calling Vercel instead of your Render backend. Please set your Render Backend URL below.');
+        setShowApiInput(true);
+      } else {
+        setError(requestError.message || 'Login failed. Please check your password or backend connection.');
+      }
+    }
+  }
+
+  function handleSaveApi(event) {
+    event.preventDefault();
+    if (customApi) {
+      setApiBaseUrl(customApi);
+    }
+  }
+
+  return (
+    <Shell>
+      <section className="panel narrow">
+        <p className="kicker">Organizer access</p>
+        <h2>Host console</h2>
+        <form onSubmit={submit}>
+          <label>
+            Admin password
+            <input type="password" value={password} onChange={event => setPassword(event.target.value)} required />
+          </label>
+          {error && <p className="error">{error}</p>}
+          <button className="button primary wide">Sign in</button>
+        </form>
+
+        <div className="api-config-box" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--panel-border)' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 8px' }}>
+            Connected Backend: <code style={{ color: 'var(--accent)', background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px' }}>{API}</code>
+            {' · '}
+            <button type="button" onClick={() => setShowApiInput(!showApiInput)} style={{ background: 'none', border: 'none', color: 'var(--accent)', padding: 0, textDecoration: 'underline', cursor: 'pointer', fontSize: '12px' }}>
+              {showApiInput ? 'Hide' : 'Change Backend URL'}
+            </button>
+          </p>
+          {showApiInput && (
+            <form onSubmit={handleSaveApi} style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+              <input
+                type="url"
+                value={customApi}
+                onChange={event => setCustomApi(event.target.value)}
+                placeholder="https://your-backend.onrender.com"
+                style={{ flex: 1, padding: '8px 12px', fontSize: '13px' }}
+                required
+              />
+              <button type="submit" className="button ghost" style={{ padding: '8px 14px', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                Save & Connect
+              </button>
+            </form>
+          )}
+        </div>
+      </section>
+    </Shell>
+  );
 }
 
 function AdminHistory() {

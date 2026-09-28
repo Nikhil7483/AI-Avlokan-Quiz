@@ -16,13 +16,34 @@ function getBrowserLocation() {
   }
 }
 
+export function getSavedApiUrl() {
+  try {
+    return (typeof window !== 'undefined' && localStorage.getItem('apiBaseUrl')) || '';
+  } catch {
+    return '';
+  }
+}
+
+export function setApiBaseUrl(url) {
+  try {
+    const cleaned = cleanUrl(url);
+    if (cleaned) {
+      localStorage.setItem('apiBaseUrl', cleaned);
+    } else {
+      localStorage.removeItem('apiBaseUrl');
+    }
+    window.location.reload();
+  } catch {}
+}
+
 const browserLocation = getBrowserLocation();
+const savedApi = cleanUrl(getSavedApiUrl());
 const rawApi = cleanUrl(import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL);
 const defaultApiBase = import.meta.env.DEV
   ? `${browserLocation.protocol}//${browserLocation.hostname}:8000`
   : browserLocation.origin;
 
-export const API = rawApi || defaultApiBase;
+export const API = savedApi || rawApi || defaultApiBase;
 
 function resolveWsOrigin(apiBaseUrl) {
   try {
