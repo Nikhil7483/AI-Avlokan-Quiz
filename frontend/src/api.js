@@ -41,7 +41,7 @@ const savedApi = cleanUrl(getSavedApiUrl());
 const rawApi = cleanUrl(import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL);
 const defaultApiBase = import.meta.env.DEV
   ? `${browserLocation.protocol}//${browserLocation.hostname}:8000`
-  : browserLocation.origin;
+  : 'https://ai-avlokan-quiz.onrender.com';
 
 export const API = savedApi || rawApi || defaultApiBase;
 

@@ -29,15 +29,16 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 app = FastAPI(title="AI Avlokan Quiz API")
 app_env = os.getenv("APP_ENV", "development").lower()
-frontend_origins = [origin.strip().rstrip("/") for origin in os.getenv("FRONTEND_ORIGIN", os.getenv("FRONTEND_URL", "http://localhost:5173")).split(",") if origin.strip()]
-public_app_url = os.getenv("PUBLIC_APP_URL", "").rstrip("/")
-lan_frontend_origin = r"https?://(?:localhost|127\.0\.0\.1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(?::\d+)?"
-app.add_middleware(CORSMiddleware, allow_origins=frontend_origins, allow_origin_regex=lan_frontend_origin if app_env != "production" else None, allow_credentials=True, allow_methods=["GET", "POST", "OPTIONS"], allow_headers=["Authorization", "Content-Type"])
-allowed_hosts = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "*").split(",") if host.strip()]
-if allowed_hosts != ["*"]:
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
-admin_password = os.getenv("ADMIN_PASSWORD", "amruthasin" if app_env != "production" else "")
-admin_secret = os.getenv("ADMIN_SECRET", admin_password)
+public_app_url = os.getenv("PUBLIC_APP_URL", "https://ai-avlokan-quiz.vercel.app").rstrip("/")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"^https?://.*",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+admin_password = os.getenv("ADMIN_PASSWORD", "amruthasin")
+admin_secret = os.getenv("ADMIN_SECRET", "avlokan_quiz_secret_key_production_32chars")
 
 class LoginBody(BaseModel):
     password: str
