@@ -268,6 +268,15 @@ def dashboard_payload(db: Session, session: QuizSession) -> dict[str, Any]:
         "fastest": fastest[:5],
     }
 
+@app.get("/")
+def root():
+    return {
+        "name": "AI Avlokan Quiz API",
+        "status": "online",
+        "health": "/api/health",
+        "docs": "/docs",
+    }
+
 @app.get("/api/health")
 def health():
     return {"ok": True}
