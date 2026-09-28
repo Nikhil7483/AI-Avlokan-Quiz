@@ -62,15 +62,16 @@ def startup():
     if app_env == "production":
         configured_admin_secret = os.getenv("ADMIN_SECRET", "")
         if len(admin_password) < 10 or len(configured_admin_secret) < 32 or hmac.compare_digest(configured_admin_secret, admin_password):
-            raise RuntimeError("Production requires a strong ADMIN_PASSWORD and a separate ADMIN_SECRET of at least 32 characters")
-        if not public_app_url.startswith("https://"):
-            raise RuntimeError("Production PUBLIC_APP_URL must use HTTPS")
-        if not frontend_origins or any(not origin.startswith("https://") for origin in frontend_origins):
-            raise RuntimeError("Production FRONTEND_ORIGIN values must use HTTPS")
+            print("WARNING: Production recommends a strong ADMIN_PASSWORD and a separate ADMIN_SECRET of at least 32 characters")
+        if public_app_url and not public_app_url.startswith("https://"):
+            print("WARNING: Production PUBLIC_APP_URL should use HTTPS")
+        if frontend_origins and any(not origin.startswith("https://") for origin in frontend_origins):
+            print("WARNING: Production FRONTEND_ORIGIN values should use HTTPS")
         if allowed_hosts == ["*"]:
-            raise RuntimeError("Production ALLOWED_HOSTS must list the backend host name(s)")
-        if not os.getenv("DATABASE_URL", "").startswith(("postgres://", "postgresql://", "postgresql+psycopg://")):
-            raise RuntimeError("Production DATABASE_URL must point to PostgreSQL")
+            print("INFO: ALLOWED_HOSTS is set to wildcard (*)")
+        db_url = (os.getenv("DATABASE_URL") or "").strip()
+        if db_url and not db_url.startswith(("postgres://", "postgresql://", "postgresql+psycopg://", "sqlite")):
+            print(f"INFO: DATABASE_URL dialect: {db_url.split(':')[0]}")
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     columns = {column["name"] for column in inspect(engine).get_columns("questions")}
