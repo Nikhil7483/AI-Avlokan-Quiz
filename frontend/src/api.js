@@ -18,7 +18,12 @@ function getBrowserLocation() {
 
 export function getSavedApiUrl() {
   try {
-    return (typeof window !== 'undefined' && localStorage.getItem('apiBaseUrl')) || '';
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('apiBaseUrl') : '';
+    if (saved && (saved.includes('vercel.app') || (saved.includes('localhost') && window.location.hostname !== 'localhost'))) {
+      localStorage.removeItem('apiBaseUrl');
+      return '';
+    }
+    return saved || '';
   } catch {
     return '';
   }

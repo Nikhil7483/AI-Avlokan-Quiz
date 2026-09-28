@@ -14,7 +14,6 @@ from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from sqlalchemy import func, inspect, text
