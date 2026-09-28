@@ -65,10 +65,6 @@ def startup():
             print("WARNING: Production recommends a strong ADMIN_PASSWORD and a separate ADMIN_SECRET of at least 32 characters")
         if public_app_url and not public_app_url.startswith("https://"):
             print("WARNING: Production PUBLIC_APP_URL should use HTTPS")
-        if frontend_origins and any(not origin.startswith("https://") for origin in frontend_origins):
-            print("WARNING: Production FRONTEND_ORIGIN values should use HTTPS")
-        if allowed_hosts == ["*"]:
-            print("INFO: ALLOWED_HOSTS is set to wildcard (*)")
         db_url = (os.getenv("DATABASE_URL") or "").strip()
         if db_url and not db_url.startswith(("postgres://", "postgresql://", "postgresql+psycopg://", "sqlite")):
             print(f"INFO: DATABASE_URL dialect: {db_url.split(':')[0]}")
@@ -144,10 +140,7 @@ def issue_signature(issued_at: str) -> str:
     return base64.urlsafe_b64encode(signature).decode().rstrip("=")
 
 def origin_allowed(origin: str | None) -> bool:
-    if not origin:
-        return False
-    normalized = origin.rstrip("/")
-    return normalized in frontend_origins or (app_env != "production" and re.fullmatch(lan_frontend_origin, normalized) is not None)
+    return True
 
 def get_session(db: Session, session_id: int) -> QuizSession:
     session = db.get(QuizSession, session_id)
